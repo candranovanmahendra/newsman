@@ -1,32 +1,30 @@
-// pages/api/post.js
-import fetch from "node-fetch";
-
-const BOT_TOKEN = "7525794586:AAH9YlfXazDX1zzx1ss23q8RuIqyMJcVzZI"; // ganti!
-const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).send("Method not allowed");
+  if (req.method !== 'POST') return res.status(405).end();
 
   const { cat } = req.body;
-  const uid = req.query.uid;
+  const { uid } = req.query;
 
-  if (!cat || !uid) return res.status(400).send("Missing data");
+  if (!cat || !uid) return res.status(400).json({ error: "Missing data" });
+
+  const BOT_TOKEN = '7525794586:AAH9YlfXazDX1zzx1ss23q8RuIqyMJcVzZI';
+  const chat_id = uid;
 
   try {
-    // Kirim ke Telegram
-    await fetch(`${TELEGRAM_API}/sendPhoto`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: uid,
-        photo: cat,
-        caption: "📸 Gambar dari halaman kamu",
-      }),
+        chat_id,
+        photo: cat
+      })
     });
 
-    res.status(200).json({ ok: true });
+    const data = await response.json();
+    if (!data.ok) throw new Error(data.description);
+
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error("Telegram error:", err);
-    res.status(500).send("Telegram error");
+    console.error("❌ Failed to send:", err.message);
+    res.status(500).json({ error: "Telegram send failed" });
   }
 }
