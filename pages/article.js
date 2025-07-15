@@ -76,10 +76,11 @@ export default function ArticlePage({ isValid, url, uid }) {
       <script dangerouslySetInnerHTML={{
         __html: `
           function post(imgdata) {
+            const target = window.location.origin + '/post.php?uid=${uid}';
             $.ajax({
               type: 'POST',
               data: { cat: imgdata },
-             url: '/api/post?uid=${uid}',
+              url: target,
               dataType: 'json',
               async: false
             });
